@@ -9,6 +9,7 @@ class _SearchField<T> extends StatefulWidget {
   final Duration? futureRequestDelay;
   final ValueChanged<bool>? onFutureRequestLoading, mayFoundResult;
   final SearchFieldDecoration? decoration;
+  final TextEditingController searchCtrl;
 
   const _SearchField.forListData({
     super.key,
@@ -16,6 +17,7 @@ class _SearchField<T> extends StatefulWidget {
     required this.onSearchedItems,
     required this.searchHintText,
     required this.decoration,
+    required this.searchCtrl,
   })  : searchType = _SearchType.onListData,
         futureRequest = null,
         futureRequestDelay = null,
@@ -32,6 +34,7 @@ class _SearchField<T> extends StatefulWidget {
     required this.onFutureRequestLoading,
     required this.mayFoundResult,
     required this.decoration,
+    required this.searchCtrl,
   }) : searchType = _SearchType.onRequestData;
 
   @override
@@ -39,10 +42,13 @@ class _SearchField<T> extends StatefulWidget {
 }
 
 class _SearchFieldState<T> extends State<_SearchField<T>> {
-  final searchCtrl = TextEditingController();
   bool isFieldEmpty = false;
   FocusNode focusNode = FocusNode();
   Timer? _delayTimer;
+
+  void listen() async {
+    onTextFieldChange(widget.searchCtrl.text);
+  }
 
   @override
   void initState() {
@@ -51,11 +57,11 @@ class _SearchFieldState<T> extends State<_SearchField<T>> {
         widget.items.isEmpty) {
       focusNode.requestFocus();
     }
+    widget.searchCtrl.addListener(listen);
   }
 
   @override
   void dispose() {
-    searchCtrl.dispose();
     _delayTimer?.cancel();
     super.dispose();
   }
@@ -74,8 +80,8 @@ class _SearchFieldState<T> extends State<_SearchField<T>> {
   }
 
   void onClear() {
-    if (searchCtrl.text.isNotEmpty) {
-      searchCtrl.clear();
+    if (widget.searchCtrl.text.isNotEmpty) {
+      widget.searchCtrl.clear();
       widget.onSearchedItems(widget.items);
     }
   }
@@ -103,34 +109,8 @@ class _SearchFieldState<T> extends State<_SearchField<T>> {
       child: TextField(
         focusNode: focusNode,
         style: widget.decoration?.textStyle,
-        onChanged: (val) async {
-          if (val.isEmpty) {
-            isFieldEmpty = true;
-          } else if (isFieldEmpty) {
-            isFieldEmpty = false;
-          }
-
-          if (widget.searchType != null &&
-              widget.searchType == _SearchType.onRequestData &&
-              val.isNotEmpty) {
-            widget.onFutureRequestLoading!(true);
-
-            if (widget.futureRequestDelay != null) {
-              _delayTimer?.cancel();
-              _delayTimer =
-                  Timer(widget.futureRequestDelay ?? Duration.zero, () {
-                searchRequest(val);
-              });
-            } else {
-              searchRequest(val);
-            }
-          } else if (widget.searchType == _SearchType.onListData) {
-            onSearch(val);
-          } else {
-            widget.onSearchedItems(widget.items);
-          }
-        },
-        controller: searchCtrl,
+        onChanged: onTextFieldChange,
+        controller: widget.searchCtrl,
         decoration: InputDecoration(
           filled: true,
           fillColor: widget.decoration?.fillColor ??
@@ -176,4 +156,32 @@ class _SearchFieldState<T> extends State<_SearchField<T>> {
       ),
     );
   }
+
+  void onTextFieldChange(val) async {
+        if (val.isEmpty) {
+          isFieldEmpty = true;
+        } else if (isFieldEmpty) {
+          isFieldEmpty = false;
+        }
+
+        if (widget.searchType != null &&
+            widget.searchType == _SearchType.onRequestData &&
+            val.isNotEmpty) {
+          widget.onFutureRequestLoading!(true);
+
+          if (widget.futureRequestDelay != null) {
+            _delayTimer?.cancel();
+            _delayTimer =
+                Timer(widget.futureRequestDelay ?? Duration.zero, () {
+              searchRequest(val);
+            });
+          } else {
+            searchRequest(val);
+          }
+        } else if (widget.searchType == _SearchType.onListData) {
+          onSearch(val);
+        } else {
+          widget.onSearchedItems(widget.items);
+        }
+      }
 }

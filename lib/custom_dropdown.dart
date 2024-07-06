@@ -46,6 +46,9 @@ const _defaultErrorStyle = TextStyle(
 );
 
 class CustomDropdown<T> extends StatefulWidget {
+
+  final TextEditingController searchCtrl;
+
   /// The list of items user can select.
   final List<T>? items;
 
@@ -184,6 +187,7 @@ class CustomDropdown<T> extends StatefulWidget {
     super.key,
     required this.items,
     required this.onChanged,
+    required this.searchCtrl,
     this.controller,
     this.itemsScrollController,
     this.initialItem,
@@ -266,7 +270,7 @@ class CustomDropdown<T> extends StatefulWidget {
     this.hideSelectedFieldWhenExpanded = false,
     this.enabled = true,
     this.disabledDecoration,
-    this.closeDropDownOnClearFilterSearch = false,
+    this.closeDropDownOnClearFilterSearch = false, required this.searchCtrl,
   })  : assert(
           initialItem == null || controller == null,
           'Only one of initialItem or controller can be specified at a time',
@@ -325,7 +329,7 @@ class CustomDropdown<T> extends StatefulWidget {
     this.hideSelectedFieldWhenExpanded = false,
     this.enabled = true,
     this.disabledDecoration,
-    this.closeDropDownOnClearFilterSearch = false,
+    this.closeDropDownOnClearFilterSearch = false, required this.searchCtrl,
   })  : assert(
           initialItem == null || controller == null,
           'Only one of initialItem or controller can be specified at a time',
@@ -364,7 +368,7 @@ class CustomDropdown<T> extends StatefulWidget {
     this.itemsListPadding,
     this.listItemPadding,
     this.enabled = true,
-    this.disabledDecoration,
+    this.disabledDecoration, required this.searchCtrl,
   })  : assert(
           initialItems == null || multiSelectController == null,
           'Only one of initialItems or controller can be specified at a time',
@@ -426,7 +430,7 @@ class CustomDropdown<T> extends StatefulWidget {
     this.listItemPadding,
     this.enabled = true,
     this.disabledDecoration,
-    this.closeDropDownOnClearFilterSearch = false,
+    this.closeDropDownOnClearFilterSearch = false, required this.searchCtrl,
   })  : assert(
           initialItems == null || multiSelectController == null,
           'Only one of initialItems or controller can be specified at a time',
@@ -487,7 +491,7 @@ class CustomDropdown<T> extends StatefulWidget {
     this.hideSelectedFieldWhenExpanded = false,
     this.enabled = true,
     this.disabledDecoration,
-    this.closeDropDownOnClearFilterSearch = false,
+    this.closeDropDownOnClearFilterSearch = false, required this.searchCtrl,
   })  : assert(
           initialItems == null || multiSelectController == null,
           'Only one of initialItems or controller can be specified at a time',
@@ -614,6 +618,7 @@ class _CustomDropdownState<T> extends State<CustomDropdown<T>> {
               visibility: widget.visibility,
               overlay: (size, hideCallback) {
                 return _DropdownOverlay<T>(
+                  searchCtrl: widget.searchCtrl,
                   onItemSelect: (T value) {
                     switch (widget._dropdownType) {
                       case _DropdownType.singleSelect:
